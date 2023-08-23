@@ -8,11 +8,27 @@ SECRET_KEY = '%2)u@2=a+=%l4h*j)c@y@ab12*51l08g^%zy8((!-$&g-0l@9w'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+AUTH_USER_MODEL = 'users.User'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+]
+CORS_URLS_REGEX = r'^/api/.*$' 
+
 
 
 INSTALLED_APPS = [
+    'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -24,6 +40,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -48,6 +65,16 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', 
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
