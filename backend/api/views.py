@@ -1,5 +1,6 @@
 from users.models import User
-from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import UserProfileSerializer
+from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -10,6 +11,8 @@ class UserListView(viewsets.ModelViewSet):
     http_method_names = 'get', 'post', 'patch', 'delete'
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
+    authentication_classes = []
+    permission_classes = [AllowAny] 
 
     def perform_create(self, serializer):
         serializer.save()
