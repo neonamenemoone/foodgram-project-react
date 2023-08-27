@@ -1,8 +1,7 @@
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
 from users.models import User
+from recipes.models import Tag
 
 
 class UserSerializer(UserSerializer):
@@ -38,3 +37,10 @@ class UserProfileSerializer(UserSerializer):
 class UserSetPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
+        fields = ("id", "name", "color", "slug")

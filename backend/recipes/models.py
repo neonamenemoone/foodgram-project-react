@@ -1,13 +1,18 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 
 User = get_user_model()
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=200, unique=True)
     color = models.CharField(max_length=7)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(max_length=200, unique=True, null=True, validators=[RegexValidator(
+        regex=r'^[-a-zA-Z0-9_]+$',
+        message='Slug может содержать только буквы, цифры, дефисы и символ подчеркивания.',
+        code='invalid_slug'
+    )])
 
     def __str__(self):
         return self.name

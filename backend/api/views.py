@@ -1,4 +1,6 @@
 from users.models import User
+from recipes.models import Tag
+from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -7,10 +9,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 
-from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSetPasswordSerializer
+from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSetPasswordSerializer, TagSerializer
 
 
-class UserListView(viewsets.ModelViewSet):
+class UserView(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
@@ -54,3 +56,15 @@ class UserListView(viewsets.ModelViewSet):
             request.user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         raise ValidationError('Текущий пароль неверный.')
+
+
+class TagView(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = [AllowAny]
+    
+    @action(detail=True, methods=['GET'])
+    def get_tag_by_id(self, request, pk=None):
+        tag = get_object_or_404(Tag, id=pk)
+        serializer = TagSerializer(tag)
+        return Response(serializer.data)
