@@ -1,15 +1,15 @@
 from users.models import User
-from recipes.models import Tag
-from django.shortcuts import get_object_or_404
+from recipes.models import Tag, Ingredient
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 
 
-from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSetPasswordSerializer, TagSerializer
+from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSetPasswordSerializer, TagSerializer, IngredientSerializer
 
 
 class UserView(viewsets.ModelViewSet):
@@ -62,9 +62,11 @@ class TagView(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
+
     
-    @action(detail=True, methods=['GET'])
-    def get_tag_by_id(self, request, pk=None):
-        tag = get_object_or_404(Tag, id=pk)
-        serializer = TagSerializer(tag)
-        return Response(serializer.data)
+class IngredientView(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
