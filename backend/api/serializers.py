@@ -1,6 +1,6 @@
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
-from users.models import User
+from users.models import User, Subscription
 from recipes.models import Tag, Ingredient
 
 
@@ -35,6 +35,7 @@ class UserProfileSerializer(UserSerializer):
 
 
 class UserSetPasswordSerializer(serializers.Serializer):
+
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
 
@@ -45,7 +46,25 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ("id", "name", "color", "slug")
 
+
 class IngredientSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscription
+        fields = ('user', 'author')
+
+
+class UserWithSubscriptionsSerializer(serializers.ModelSerializer):
+
+    subscriptions = UserSerializer(many=True)
+    
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'subscriptions')

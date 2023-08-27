@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 
 
-from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSetPasswordSerializer, TagSerializer, IngredientSerializer
+from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSetPasswordSerializer, TagSerializer, IngredientSerializer, UserWithSubscriptionsSerializer
 
 
 class UserView(viewsets.ModelViewSet):
@@ -70,3 +70,23 @@ class IngredientView(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = [SearchFilter]
     search_fields = ['name']
+
+
+class SubscriptionsView(viewsets.ModelViewSet):
+    serializer_class = UserWithSubscriptionsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.subscriptions.all()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        response_data = {
+            'count': len(data),
+            'next': None,
+            'previous': None,
+            'results': data,
+        }
+        return Response(response_data)
