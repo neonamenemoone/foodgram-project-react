@@ -58,6 +58,29 @@ class UserView(viewsets.ModelViewSet):
         self.queryset = Subscription.objects.filter(follower=request.user)
         self.serializer_class = SubscriptionSerializer
         return super().list(request)
+    
+    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    def subscribe(self, request, pk=None):
+
+        if self.get_object() == request.user:
+            return Response({'error': 'Вы не можете взаимодействовать с собой.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'POST':
+
+            if Subscription.objects.filter(follower=request.user, author=self.get_object()).exists():
+                return Response({'error': 'Вы уже подписаны на этого пользователя.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            Subscription.objects.create(follower=request.user, author=self.get_object())
+            return Response({'success': 'Вы успешно подписались на пользователя.'}, status=status.HTTP_201_CREATED)
+
+        elif request.method == 'DELETE':
+
+            try:
+                subscription = Subscription.objects.get(follower=request.user, author=self.get_object())
+                subscription.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Subscription.DoesNotExist:
+                return Response({'error': 'Вы не были подписаны на этого пользователя.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TagView(viewsets.ModelViewSet):

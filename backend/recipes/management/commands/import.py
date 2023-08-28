@@ -9,7 +9,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
 
         current_directory = os.path.dirname(os.path.abspath(__file__))
-
         csv_file_path = os.path.join(current_directory, '..', '..', '..', '..', 'data', 'ingredients.csv')
 
         with open(csv_file_path, encoding='UTF-8') as ingredients:

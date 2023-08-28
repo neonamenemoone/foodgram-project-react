@@ -15,4 +15,5 @@ urlpatterns = [
     path('', UserView.as_view({'get':'me'})),
     path('', UserView.as_view({'post':'set_password'})),
     path('', UserView.as_view({'get':'subscriptions'})),
+    path('<int:pk>/subscribe/', UserView.as_view({'post': 'subscribe', 'delete': 'subscribe'}), name='subscribe'),
 ]
