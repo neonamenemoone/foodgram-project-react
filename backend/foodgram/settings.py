@@ -61,6 +61,7 @@ TEMPLATES = [
 ]
 
 REST_FRAMEWORK = {
+    'PAGE_SIZE': 6,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated', 
     ],

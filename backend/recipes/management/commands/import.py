@@ -7,9 +7,9 @@ import os
 class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
-        # Получаем абсолютный путь к директории с текущим файлом
+
         current_directory = os.path.dirname(os.path.abspath(__file__))
-        # Формируем путь к файлу ingredients.csv, находящемуся в папке выше
+
         csv_file_path = os.path.join(current_directory, '..', '..', '..', '..', 'data', 'ingredients.csv')
 
         with open(csv_file_path, encoding='UTF-8') as ingredients:

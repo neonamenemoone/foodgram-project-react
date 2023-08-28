@@ -1,4 +1,4 @@
-from users.models import User
+from users.models import User, Subscription
 from recipes.models import Tag, Ingredient
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
@@ -9,14 +9,21 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 
 
-from .serializers import UserProfileSerializer, UserRegistrationSerializer, UserSetPasswordSerializer, TagSerializer, IngredientSerializer, UserWithSubscriptionsSerializer
+from .serializers import (
+    UserProfileSerializer,
+    UserRegistrationSerializer,
+    UserSetPasswordSerializer,
+    TagSerializer,
+    IngredientSerializer,
+    SubscriptionSerializer
+)
 
 
 class UserView(viewsets.ModelViewSet):
-    pagination_class = PageNumberPagination
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [AllowAny] 
+    permission_classes = [AllowAny]
+    pagination_class = PageNumberPagination
 
     def create(self, request):
         serializer = UserRegistrationSerializer(data=self.request.data)
@@ -26,18 +33,6 @@ class UserView(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        data = serializer.data
-        response_data = {
-            'count': len(data),
-            'next': None,
-            'previous': None,
-            'results': data,
-        }
-        return Response(response_data)
-    
     def retrieve(self, request, *args, **kwargs):
         self.permission_classes = [IsAuthenticated]
         self.check_permissions(request)
@@ -57,36 +52,23 @@ class UserView(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         raise ValidationError('Текущий пароль неверный.')
 
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def subscriptions(self, request):
+        
+        self.queryset = Subscription.objects.filter(follower=request.user)
+        self.serializer_class = SubscriptionSerializer
+        return super().list(request)
+
 
 class TagView(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
 
-    
+
 class IngredientView(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = [SearchFilter]
     search_fields = ['name']
-
-
-class SubscriptionsView(viewsets.ModelViewSet):
-    serializer_class = UserWithSubscriptionsSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return self.request.user.subscriptions.all()
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        data = serializer.data
-        response_data = {
-            'count': len(data),
-            'next': None,
-            'previous': None,
-            'results': data,
-        }
-        return Response(response_data)

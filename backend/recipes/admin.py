@@ -5,9 +5,9 @@ from .models import Recipe, Tag, Ingredient
 class RecipeAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Рецепт."""
 
-    list_display = ('title', 'author')
-    list_filter = ('author', 'title', 'tags')
-    search_fields = ('title', 'author__email', 'author__username')
+    list_display = ('name', 'author')
+    list_filter = ('author', 'name', 'tags')
+    search_fields = ('name', 'author__email', 'author__username')
 
     def get_favorite_count(self, obj):
         return obj.favorite_set.count()

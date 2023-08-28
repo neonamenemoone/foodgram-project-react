@@ -28,7 +28,7 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='recipes/')
     description = models.TextField()
     ingredients = models.ManyToManyField(Ingredient, through='RecipeIngredient')
@@ -36,7 +36,7 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField()
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class RecipeIngredient(models.Model):
