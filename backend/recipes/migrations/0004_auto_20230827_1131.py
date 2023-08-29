@@ -5,20 +5,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('recipes', '0003_remove_ingredient_quantity'),
+        ("recipes", "0003_remove_ingredient_quantity"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tag',
-            name='name',
+            model_name="tag",
+            name="name",
             field=models.CharField(max_length=200, unique=True),
         ),
         migrations.AlterField(
-            model_name='tag',
-            name='slug',
-            field=models.SlugField(max_length=200, null=True, unique=True, validators=[django.core.validators.RegexValidator(code='invalid_slug', message='Slug может содержать только буквы, цифры, дефисы и символ подчеркивания.', regex='^[-a-zA-Z0-9_]+$')]),
+            model_name="tag",
+            name="slug",
+            field=models.SlugField(
+                max_length=200,
+                null=True,
+                unique=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        code="invalid_slug",
+                        message="Slug может содержать только буквы, цифры, дефисы и символ подчеркивания.",
+                        regex="^[-a-zA-Z0-9_]+$",
+                    )
+                ],
+            ),
         ),
     ]

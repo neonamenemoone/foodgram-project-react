@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('recipes', '0007_favoriterecipe'),
+        ("recipes", "0007_favoriterecipe"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recipe',
-            name='is_favorited',
+            model_name="recipe",
+            name="is_favorited",
             field=models.BooleanField(default=False),
         ),
     ]

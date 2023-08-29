@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0004_user_shopping_cart'),
+        ("users", "0004_user_shopping_cart"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='user',
-            name='favorite_recipes',
+            model_name="user",
+            name="favorite_recipes",
         ),
         migrations.RemoveField(
-            model_name='user',
-            name='shopping_cart',
+            model_name="user",
+            name="shopping_cart",
         ),
     ]

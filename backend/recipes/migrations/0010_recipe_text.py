@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('recipes', '0009_recipe_is_in_shopping_cart'),
+        ("recipes", "0009_recipe_is_in_shopping_cart"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='recipe',
-            name='text',
+            model_name="recipe",
+            name="text",
             field=models.TextField(default=1),
             preserve_default=False,
         ),

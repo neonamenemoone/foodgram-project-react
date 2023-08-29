@@ -4,16 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('recipes', '0013_rename_amount_recipeingredient_quantity'),
-        ('users', '0003_user_is_subscribed'),
+        ("recipes", "0013_rename_amount_recipeingredient_quantity"),
+        ("users", "0003_user_is_subscribed"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='shopping_cart',
-            field=models.ManyToManyField(blank=True, related_name='shoppers', to='recipes.Recipe'),
+            model_name="user",
+            name="shopping_cart",
+            field=models.ManyToManyField(
+                blank=True, related_name="shoppers", to="recipes.Recipe"
+            ),
         ),
     ]

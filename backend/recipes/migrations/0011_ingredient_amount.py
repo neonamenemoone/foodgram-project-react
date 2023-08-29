@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('recipes', '0010_recipe_text'),
+        ("recipes", "0010_recipe_text"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='ingredient',
-            name='amount',
+            model_name="ingredient",
+            name="amount",
             field=models.PositiveSmallIntegerField(default=1),
         ),
     ]
