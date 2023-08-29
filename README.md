@@ -1,4 +1,4 @@
-<img src="https://github.com/devicons/devicon/blob/master/icons/react/react-original-wordmark.svg" title="React" alt="React" width="40" height="40"/>&nbsp;
+<img src="https://github.com/devicons/devicon/blob/master/icons/react/react-original-wordmark.svg" title="React" alt="React" width="100" height="100"/>&nbsp;
 # FoodGram
 
 Проект "FoodGram" - это веб-приложение, разработанное для помощи пользователям в поиске, сохранении и организации их любимых рецептов. Оно позволяет пользователям искать рецепты, добавлять их в избранное и создавать список покупок на основе выбранных рецептов.
