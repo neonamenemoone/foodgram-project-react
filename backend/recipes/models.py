@@ -46,7 +46,7 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    amount = models.PositiveIntegerField()
+    quantity = models.PositiveIntegerField()
 
     def __str__(self):
         return f'{self.recipe} - {self.ingredient}'

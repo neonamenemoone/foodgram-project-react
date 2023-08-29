@@ -113,10 +113,10 @@ class RecipeView(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = RecipeCreateSerializer(data=request.data, context={'request': request})
-        response_serializer = RecipeFullSerializer(serializer)
 
         if serializer.is_valid():
-            serializer.save(author=request.user)
+            recipe = serializer.save(author=request.user)
+            response_serializer = RecipeFullSerializer(recipe)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
