@@ -21,6 +21,7 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(max_length=255)
     measurement_unit = models.CharField(max_length=50)
+    amount = models.PositiveSmallIntegerField(null=False, blank=False, default=1)
 
     def __str__(self):
         return self.name
@@ -31,9 +32,12 @@ class Recipe(models.Model):
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='recipes/')
     description = models.TextField()
+    text = models.TextField()
     ingredients = models.ManyToManyField(Ingredient, through='RecipeIngredient')
     tags = models.ManyToManyField(Tag)
     cooking_time = models.PositiveIntegerField()
+    is_favorited = models.BooleanField(default=False)
+    is_in_shopping_cart = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -46,3 +50,8 @@ class RecipeIngredient(models.Model):
 
     def __str__(self):
         return f'{self.recipe} - {self.ingredient}'
+
+
+class FavoriteRecipe(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)

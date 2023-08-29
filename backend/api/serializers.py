@@ -1,7 +1,7 @@
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from users.models import User, Subscription
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
 
 
 class UserSerializer(UserSerializer):
@@ -31,7 +31,7 @@ class UserProfileSerializer(UserSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name']
+        fields = ['email', 'id', 'username', 'first_name', 'last_name', 'is_subscribed']
 
 
 class UserSetPasswordSerializer(serializers.Serializer):
@@ -51,7 +51,15 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit')
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    ingredient = IngredientSerializer() 
+    quantity = serializers.IntegerField()
+    class Meta:
+        model = RecipeIngredient
+        fields = ['ingredient', 'quantity']
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -67,7 +75,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         recipes = Recipe.objects.filter(author=obj.author)
-        serializers = RecipesSerializer(recipes, many=True)
+        serializers = RecipeSerializer(recipes, many=True)
         return serializers.data
 
     def get_recipes_count(self, obj):
@@ -88,8 +96,29 @@ class UserWithSubscriptionsSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'subscriptions')
 
 
-class RecipesSerializer(serializers.ModelSerializer):
+class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class RecipeFullSerializer(serializers.ModelSerializer):
+    author = UserProfileSerializer()
+    tags = TagSerializer(many=True)
+    ingredients = IngredientSerializer(many=True)
+
+    class Meta:
+        model = Recipe
+        fields = [
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+        ]

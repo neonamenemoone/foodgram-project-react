@@ -8,7 +8,8 @@ class User(AbstractUser):
     username = models.CharField('Username', max_length=150, unique=True)
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
-
+    favorite_recipes = models.ManyToManyField('recipes.Recipe', related_name='favorited_by', blank=True)
+    is_subscribed = models.BooleanField('Подписан', default=False)
 
 class Subscription(models.Model):
 

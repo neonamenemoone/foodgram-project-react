@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import Recipe, Tag, Ingredient
+from .models import Recipe, Tag, Ingredient, RecipeIngredient
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    fields = ['ingredient', 'quantity']
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -8,6 +14,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author')
     list_filter = ('author', 'name', 'tags')
     search_fields = ('name', 'author__email', 'author__username')
+    inlines = [RecipeIngredientInline]
 
     def get_favorite_count(self, obj):
         return obj.favorite_set.count()
