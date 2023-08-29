@@ -17,6 +17,7 @@ from .serializers import (
     IngredientSerializer,
     SubscriptionSerializer,
     RecipeFullSerializer,
+    RecipeCreateSerializer,
     RecipeSerializer
 )
 
@@ -110,6 +111,16 @@ class RecipeView(viewsets.ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['name', 'author__username']
 
+    def create(self, request, *args, **kwargs):
+        serializer = RecipeCreateSerializer(data=request.data, context={'request': request})
+        response_serializer = RecipeFullSerializer(serializer)
+
+        if serializer.is_valid():
+            serializer.save(author=request.user)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True, methods=['post', 'delete'])
     def favorite(self, request, pk=None):
         recipe = self.get_object()
@@ -123,11 +134,11 @@ class RecipeView(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 user.favorite_recipes.add(recipe)
-                serializer = RecipeSerializer(recipe)  # Используем RecipeSerializer при добавлении
+                serializer = RecipeSerializer(recipe)
             elif request.method == 'DELETE':
                 if user.favorite_recipes.filter(pk=pk).exists():
                     user.favorite_recipes.remove(recipe)
-                    return Response(status=status.HTTP_204_NO_CONTENT)  # Возвращаем 204 при удалении
+                    return Response(status=status.HTTP_204_NO_CONTENT)
                 else:
                     return Response(
                         {'errors': 'Рецепт не найден в избранном.'},
