@@ -1,5 +1,5 @@
 from users.models import User, Subscription
-from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe
+from recipes.models import Tag, Ingredient, Recipe
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -111,7 +111,13 @@ class RecipeView(viewsets.ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['name', 'author__username']
 
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
     def create(self, request, *args, **kwargs):
+        
         serializer = RecipeCreateSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
@@ -151,3 +157,40 @@ class RecipeView(viewsets.ModelViewSet):
                 {'detail': 'Пользователь не авторизован.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+
+        if instance.author != user and not user.is_staff:
+            return Response(
+                {'detail': 'У вас недостаточно прав для выполнения данного действия.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = RecipeCreateSerializer(
+            instance,
+            data=request.data,
+            context={'request': request},
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            response_serializer = RecipeFullSerializer(instance)
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+
+        if instance.author != user and not user.is_staff:
+            return Response(
+                {'detail': 'У вас недостаточно прав для удаления данного рецепта.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
