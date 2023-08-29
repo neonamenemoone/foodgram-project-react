@@ -1,6 +1,7 @@
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+from django.db import models
+
 
 User = get_user_model()
 
@@ -55,3 +56,13 @@ class RecipeIngredient(models.Model):
 class FavoriteRecipe(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+
+
+class ShoppingCart(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    quantity = models.DecimalField('Количество', max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ['user', 'recipe']
