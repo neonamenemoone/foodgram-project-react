@@ -1,3 +1,5 @@
+"""Модуль admin определяет настройки для административной части."""
+
 from django.contrib import admin
 
 from .models import Ingredient, Recipe, RecipeIngredient, Tag

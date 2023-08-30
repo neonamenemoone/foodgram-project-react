@@ -1,5 +1,9 @@
+"""Модуль с представлениями API."""
+
 from io import StringIO
 
+from django.db.models import Sum
+from django.http import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -8,48 +12,38 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from django.db.models import Sum
-from django.http import HttpResponse
-
-from recipes.models import (
-    FavoriteRecipe,
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    ShoppingCart,
-    Tag,
-)
+from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
+                            RecipeIngredient, ShoppingCart, Tag)
 from users.models import Subscription, User
 
 from .permissions import IsAuthorOrAdminOrReadOnly
-from .serializers import (
-    IngredientSerializer,
-    RecipeCreateSerializer,
-    RecipeFullSerializer,
-    RecipeSerializer,
-    SubscriptionSerializer,
-    TagSerializer,
-    UserProfileSerializer,
-    UserRegistrationSerializer,
-    UserSetPasswordSerializer,
-)
+from .serializers import (IngredientSerializer, RecipeCreateSerializer,
+                          RecipeFullSerializer, RecipeSerializer,
+                          SubscriptionSerializer, TagSerializer,
+                          UserProfileSerializer, UserRegistrationSerializer,
+                          UserSetPasswordSerializer)
 
 
 class UserView(viewsets.ModelViewSet):
+    """Представление для пользователей."""
+
     queryset = User.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [AllowAny]
     pagination_class = PageNumberPagination
 
     def create(self, request):
+        """Метод создания пользователя."""
         serializer = UserRegistrationSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         return super().create(request)
 
     def perform_update(self, serializer):
+        """Метод обновления пользователя."""
         serializer.save()
 
     def retrieve(self, request, *args, **kwargs):
+        """Метод получения профиля пользователя."""
         self.permission_classes = [IsAuthenticated]
         self.check_permissions(request)
         return super().retrieve(request)
@@ -58,12 +52,14 @@ class UserView(viewsets.ModelViewSet):
         detail=False, methods=["get"], permission_classes=[IsAuthenticated]
     )
     def me(self, request):
+        """Метод для информации о текущем пользователе."""
         return Response(UserProfileSerializer(request.user).data)
 
     @action(
         detail=False, methods=["post"], permission_classes=[IsAuthenticated]
     )
     def set_password(self, request):
+        """Метод для изменения пароля пользователя."""
         serializer = UserSetPasswordSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         if request.user.check_password(
@@ -80,6 +76,7 @@ class UserView(viewsets.ModelViewSet):
         detail=False, methods=["get"], permission_classes=[IsAuthenticated]
     )
     def subscriptions(self, request):
+        """Метод для получения списка подписок пользователя."""
         self.queryset = Subscription.objects.filter(follower=request.user)
         self.serializer_class = SubscriptionSerializer
         return super().list(request)
@@ -90,6 +87,7 @@ class UserView(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def subscribe(self, request, pk=None):
+        """Метод для подписки и отписки пользователей."""
         if self.get_object() == request.user:
             return Response(
                 {"error": "Вы не можете взаимодействовать с собой."},
@@ -128,12 +126,16 @@ class UserView(viewsets.ModelViewSet):
 
 
 class TagView(viewsets.ModelViewSet):
+    """Представление для тегов."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [AllowAny]
 
 
 class IngredientView(viewsets.ModelViewSet):
+    """Представление для ингредиентов."""
+
     permission_classes = [AllowAny]
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -142,6 +144,8 @@ class IngredientView(viewsets.ModelViewSet):
 
 
 class RecipeView(viewsets.ModelViewSet):
+    """Представление для рецептов."""
+
     pagination_class = PageNumberPagination
     queryset = Recipe.objects.all()
     serializer_class = RecipeFullSerializer
@@ -150,11 +154,13 @@ class RecipeView(viewsets.ModelViewSet):
     search_fields = ["name", "author__username"]
 
     def get_permissions(self):
+        """Проверка аутентификации пользователя."""
         if self.action == "create":
             return [IsAuthenticated()]
         return super().get_permissions()
 
     def create(self, request, *args, **kwargs):
+        """Метод создания рецепта."""
         serializer = RecipeCreateSerializer(
             data=request.data, context={"request": request}
         )
@@ -172,6 +178,7 @@ class RecipeView(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post", "delete"])
     def favorite(self, request, pk=None):
+        """Метод для добавления рецепта в избранное."""
         recipe = self.get_object()
         user = request.user
 
@@ -207,13 +214,14 @@ class RecipeView(viewsets.ModelViewSet):
             )
 
     def partial_update(self, request, *args, **kwargs):
+        """Метод для изменения рецепта."""
         instance = self.get_object()
         user = request.user
 
         if instance.author != user and not user.is_staff:
             return Response(
                 {
-                    "detail": "У вас недостаточно прав для выполнения данного действия."
+                    "detail": "У вас недостаточно прав для данного действия."
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -237,6 +245,7 @@ class RecipeView(viewsets.ModelViewSet):
             )
 
     def destroy(self, request, *args, **kwargs):
+        """Метод для удаления рецепта."""
         instance = self.get_object()
         user = request.user
 
@@ -257,6 +266,7 @@ class RecipeView(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def shopping_cart(self, request, pk=None):
+        """Метод для добавления рецепта в список покупок и удаления."""
         recipe = self.get_object()
         user = request.user
 
@@ -296,6 +306,7 @@ class RecipeView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def download_shopping_cart(self, request, *args, **kwargs):
+        """Метод для скачивания списка покупок."""
         user = request.user
 
         if not user.is_authenticated:
@@ -315,7 +326,9 @@ class RecipeView(viewsets.ModelViewSet):
 
         for ingredient in ingredients:
             txt_buffer.write(
-                f"- {ingredient['ingredient__name']}: {ingredient['total_quantity']} {ingredient['ingredient__measurement_unit']}\n"
+                f"- {ingredient['ingredient__name']}: "
+                f"{ingredient['total_quantity']} "
+                f"{ingredient['ingredient__measurement_unit']}\n"
             )
 
         txt_buffer.seek(0)
