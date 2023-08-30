@@ -1,3 +1,4 @@
+"""Команда для импорта ингредиентов из CSV файла в базу данных."""
 import csv
 import os
 
@@ -7,7 +8,10 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
+    """Обработка команды."""
+
     def handle(self, *args, **kwargs):
+        """Загрузка ингредиентов из CSV файла в базу данных."""
         current_directory = os.path.dirname(os.path.abspath(__file__))
         csv_file_path = os.path.join(
             current_directory,

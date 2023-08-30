@@ -1,9 +1,10 @@
 """Модуль с сериализаторами для API."""
 import base64
 
-from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
+
+from django.core.files.base import ContentFile
 
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import Subscription, User

@@ -1,9 +1,11 @@
 """Модуль urls определяет маршруты для страниц API."""
 
-from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
 
+from django.urls import include, path, re_path
+
 from .views import IngredientView, RecipeView, TagView, UserView
+
 
 router = DefaultRouter()
 router.register(r"users", UserView)

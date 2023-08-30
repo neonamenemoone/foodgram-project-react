@@ -2,8 +2,6 @@
 
 from io import StringIO
 
-from django.db.models import Sum
-from django.http import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -12,16 +10,21 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
-                            RecipeIngredient, ShoppingCart, Tag)
+from django.db.models import Sum
+from django.http import HttpResponse
+
+from recipes.models import (
+    FavoriteRecipe, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag,
+)
 from users.models import Subscription, User
 
 from .permissions import IsAuthorOrAdminOrReadOnly
-from .serializers import (IngredientSerializer, RecipeCreateSerializer,
-                          RecipeFullSerializer, RecipeSerializer,
-                          SubscriptionSerializer, TagSerializer,
-                          UserProfileSerializer, UserRegistrationSerializer,
-                          UserSetPasswordSerializer)
+from .serializers import (
+    IngredientSerializer, RecipeCreateSerializer, RecipeFullSerializer,
+    RecipeSerializer, SubscriptionSerializer, TagSerializer,
+    UserProfileSerializer, UserRegistrationSerializer,
+    UserSetPasswordSerializer,
+)
 
 
 class UserView(viewsets.ModelViewSet):
@@ -252,7 +255,7 @@ class RecipeView(viewsets.ModelViewSet):
         if instance.author != user and not user.is_staff:
             return Response(
                 {
-                    "detail": "У вас недостаточно прав для удаления данного рецепта."
+                    "detail": "У вас недостаточно прав для удаления."
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )

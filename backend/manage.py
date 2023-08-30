@@ -5,6 +5,7 @@ import sys
 
 
 def main():
+    """Главная функция для запуска Django."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "foodgram.settings")
     try:
         from django.core.management import execute_from_command_line

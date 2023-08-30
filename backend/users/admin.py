@@ -7,6 +7,8 @@ from .models import Subscription, User
 
 
 class CustomUserAdmin(UserAdmin):
+    """Кастомный админский класс для модели User."""
+
     list_display = (
         "username",
         "email",
