@@ -35,9 +35,6 @@ class Ingredient(models.Model):
 
     name = models.CharField(max_length=255)
     measurement_unit = models.CharField(max_length=50)
-    amount = models.PositiveSmallIntegerField(
-        null=False, blank=False, default=1
-    )
 
     def __str__(self):
         """Возвращает строковое представление объекта ингредиента."""
@@ -57,8 +54,6 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(Tag)
     cooking_time = models.PositiveIntegerField()
-    is_favorited = models.BooleanField(default=False)
-    is_in_shopping_cart = models.BooleanField(default=False)
 
     def __str__(self):
         """Возвращает строковое представление объекта."""
@@ -68,7 +63,9 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     """Модель для хранения информации о ингредиентах в рецептах."""
 
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="amount"
+    )
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
 
@@ -80,17 +77,27 @@ class RecipeIngredient(models.Model):
 class FavoriteRecipe(models.Model):
     """Модель для хранения информации о рецептах, добавленных в избранное."""
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="favorite"
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="in_favorites"
+    )
+
+    class Meta:
+        """Метакласс модели информации о рецептах."""
+
+        unique_together = ["user", "recipe"]
 
 
 class ShoppingCart(models.Model):
     """Модель для рецептов, добавленных в список покупок."""
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    quantity = models.DecimalField(
-        "Количество", max_digits=10, decimal_places=2
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="shopping_cart"
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="in_carts"
     )
 
     class Meta:

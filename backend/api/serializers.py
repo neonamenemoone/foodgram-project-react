@@ -93,20 +93,25 @@ class IngredientSerializer(serializers.ModelSerializer):
         """Метакласс ингредиентов."""
 
         model = Ingredient
-        fields = ("id", "name", "measurement_unit", "amount")
+        fields = ("id", "name", "measurement_unit")
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов в рецепте."""
 
-    id = IngredientSerializer()
-    amount = serializers.IntegerField()
+    quantity = serializers.IntegerField()
+    name = serializers.ReadOnlyField(
+        source="ingredient.name",
+    )
+    measurement_unit = serializers.ReadOnlyField(
+        source="ingredient.measurement_unit",
+    )
 
     class Meta:
         """Метакласс ингредиентов в рецепте."""
 
         model = RecipeIngredient
-        fields = ["id", "amount"]
+        fields = ["id", "quantity", "name", "measurement_unit"]
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -183,7 +188,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
 
     class Meta:
-        """Метакласс создания."""
+        """Метакласс создания рецепта."""
 
         model = Recipe
         fields = [
@@ -202,9 +207,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 class RecipeFullSerializer(serializers.ModelSerializer):
     """Сериализатор для полной информации о рецепте."""
 
-    author = UserProfileSerializer()
-    tags = TagSerializer(many=True)
-    ingredients = IngredientSerializer(many=True)
+    tags = TagSerializer(
+        many=True,
+    )
+    ingredients = RecipeIngredientSerializer(
+        many=True,
+        source="amount",
+    )
+    author = UserSerializer(
+        read_only=True,
+    )
+    image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         """Метакласс информации о рецепте."""
@@ -215,10 +230,31 @@ class RecipeFullSerializer(serializers.ModelSerializer):
             "tags",
             "author",
             "ingredients",
-            "is_favorited",
-            "is_in_shopping_cart",
             "name",
             "image",
             "text",
             "cooking_time",
+            "is_favorited",
+            "is_in_shopping_cart",
         ]
+
+    def validate_cooking_time(self, value):
+        """Время приготовления больше ли 0."""
+        if value < 1:
+            raise serializers.ValidationError(
+                {"errors": "Время приготовления должно быть больше 0.."}
+            )
+
+    def get_is_favorited(self, obj):
+        """Добавлен ли рецепт в избранное для текущего пользователя."""
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+        return obj.in_favorites.filter(user=request.user).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        """Добавлен ли рецепт в корзину для текущего пользователя."""
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+        return obj.in_carts.filter(user=request.user).exists()
