@@ -3,8 +3,8 @@
 
 [tool.black]
 line-length = 79
-target-version = ['py38', 'py39']  # Версии Python, для которых применять форматирование
-include = '\.pyi?$'  # Типы файлов для форматирования (например, .py, .pyi)
+target-version = ['py39']
+include = '\.pyi?$'
 exclude = '''
   /(\.git|\.venv|_build|build|dist|migrations)/
-'''  # Исключить директории или файлы из форматирования
+'''
