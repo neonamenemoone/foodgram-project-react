@@ -1,43 +1,15 @@
 """Модуль с сериализаторами для API."""
-import base64
-
-from djoser.serializers import UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from django.core.files.base import ContentFile
+from django.contrib.auth.password_validation import validate_password
 
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import Subscription, User
 
 
-class Base64ImageField(serializers.ImageField):
-    """Сериализатор для изображений в формате Base64."""
-
-    def to_internal_value(self, data):
-        """Метод для преобразования данных изображения в формате Base64."""
-        if isinstance(data, str) and data.startswith("data:image"):
-            format, imgstr = data.split(";base64,")
-            ext = format.split("/")[-1]
-            return ContentFile(base64.b64decode(imgstr), name="temp." + ext)
-
-        return super().to_internal_value(data)
-
-
-class UserSerializer(UserSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователей."""
-
-    class Meta:
-        """Метакласс пользователя."""
-
-        model = User
-        fields = [
-            "first_name",
-            "last_name",
-        ]
-
-
-class UserRegistrationSerializer(UserSerializer):
-    """Сериализатор регистрации пользователя."""
 
     email = serializers.EmailField(required=True)
     username = serializers.CharField(required=True)
@@ -51,29 +23,38 @@ class UserRegistrationSerializer(UserSerializer):
         model = User
         fields = ["email", "username", "first_name", "last_name", "password"]
 
+    def validate_password(self, password):
+        """Проверяет валидность пароля."""
+        validate_password(password)
+        return password
 
-class UserProfileSerializer(UserSerializer):
-    """Сериализатор профиля пользователя."""
-
-    class Meta:
-        """Метакласс профиля пользователя."""
-
-        model = User
-        fields = [
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "is_subscribed",
-        ]
+    def create(self, validated_data):
+        """Создает нового пользователя."""
+        password = validated_data.pop("password")
+        user: User = super().create(validated_data)
+        try:
+            user.set_password(password)
+            user.save()
+            return user
+        except serializers.ValidationError as exc:
+            user.delete()
+            raise exc
 
 
-class UserSetPasswordSerializer(serializers.Serializer):
+class ChangePasswordSerializer(serializers.Serializer):
     """Сериализатор для изменения пароля пользователя."""
 
-    new_password = serializers.CharField(required=True)
-    current_password = serializers.CharField(required=True)
+    current_password = serializers.CharField(
+        required=True,
+    )
+    new_password = serializers.CharField(
+        required=True,
+    )
+
+    def validate_new_password(self, value):
+        """Проверяет новый пароль."""
+        validate_password(value)
+        return value
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -99,7 +80,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов в рецепте."""
 
-    quantity = serializers.IntegerField()
+    amount = serializers.IntegerField()
     name = serializers.ReadOnlyField(
         source="ingredient.name",
     )
@@ -111,7 +92,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         """Метакласс ингредиентов в рецепте."""
 
         model = RecipeIngredient
-        fields = ["id", "quantity", "name", "measurement_unit"]
+        fields = ["id", "amount", "name", "measurement_unit"]
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -186,22 +167,35 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания рецепта."""
 
     image = Base64ImageField()
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(), many=True
+    )
 
     class Meta:
         """Метакласс создания рецепта."""
 
         model = Recipe
         fields = [
-            "id",
             "tags",
             "ingredients",
-            "is_favorited",
-            "is_in_shopping_cart",
             "name",
             "image",
             "text",
             "cooking_time",
         ]
+
+    def recipe_ingredients_set(self, recipe, ingredients):
+        """Добавляет ингредиенты к рецепту."""
+        objs = []
+
+        for ingredient, amount in ingredients.values():
+            objs.append(
+                RecipeIngredient(
+                    recipe=recipe, ingredient=ingredient, amount=amount
+                )
+            )
+
+        RecipeIngredient.objects.bulk_create(objs)
 
 
 class RecipeFullSerializer(serializers.ModelSerializer):

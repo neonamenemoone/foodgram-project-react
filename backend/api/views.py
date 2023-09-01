@@ -2,6 +2,7 @@
 
 from io import StringIO
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -23,17 +24,17 @@ from recipes.models import (
 )
 from users.models import Subscription, User
 
+from .filters import FavoriteAndShoppingCartFilter
 from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (
+    ChangePasswordSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
     RecipeFullSerializer,
     RecipeSerializer,
     SubscriptionSerializer,
     TagSerializer,
-    UserProfileSerializer,
-    UserRegistrationSerializer,
-    UserSetPasswordSerializer,
+    UserSerializer,
 )
 
 
@@ -41,39 +42,23 @@ class UserView(viewsets.ModelViewSet):
     """Представление для пользователей."""
 
     queryset = User.objects.all()
-    serializer_class = UserProfileSerializer
+    serializer_class = UserSerializer
     permission_classes = [AllowAny]
     pagination_class = PageNumberPagination
-
-    def create(self, request):
-        """Метод создания пользователя."""
-        serializer = UserRegistrationSerializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
-        return super().create(request)
-
-    def perform_update(self, serializer):
-        """Метод обновления пользователя."""
-        serializer.save()
-
-    def retrieve(self, request, *args, **kwargs):
-        """Метод получения профиля пользователя."""
-        self.permission_classes = [IsAuthenticated]
-        self.check_permissions(request)
-        return super().retrieve(request)
 
     @action(
         detail=False, methods=["get"], permission_classes=[IsAuthenticated]
     )
     def me(self, request):
         """Метод для информации о текущем пользователе."""
-        return Response(UserProfileSerializer(request.user).data)
+        return Response(UserSerializer(request.user).data)
 
     @action(
         detail=False, methods=["post"], permission_classes=[IsAuthenticated]
     )
     def set_password(self, request):
         """Метод для изменения пароля пользователя."""
-        serializer = UserSetPasswordSerializer(data=self.request.data)
+        serializer = ChangePasswordSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         if request.user.check_password(
             serializer.validated_data["current_password"]
@@ -163,6 +148,8 @@ class RecipeView(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeFullSerializer
     permission_classes = [IsAuthorOrAdminOrReadOnly]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = FavoriteAndShoppingCartFilter
 
     def get_serializer(self, *args, **kwargs):
         """Получение сериализатора с контекстом запроса."""
@@ -176,49 +163,18 @@ class RecipeView(viewsets.ModelViewSet):
             return [IsAuthenticated()]
         return super().get_permissions()
 
-    def get_queryset(self):
-        """Получение набора данных с учетом параметров запроса."""
-        queryset = self.queryset
-        tags = self.request.query_params.getlist("tags")
-        if tags:
-            queryset = queryset.filter(tags__slug__in=tags).distinct()
-
-        author = self.request.query_params.get("author")
-        if author:
-            queryset = queryset.filter(author=author)
-
-        if not self.request.user.is_authenticated:
-            return queryset
-
-        is_in_cart = self.request.query_params.get("is_in_shopping_cart")
-        if is_in_cart:
-            ids = self.request.user.shopping_cart.values_list("id", flat=True)
-            queryset = queryset.filter(id__in=ids)
-
-        is_favorited = self.request.query_params.get("is_favorited")
-        if is_favorited:
-            ids = self.request.user.favorite.values_list("id", flat=True)
-            queryset = queryset.filter(id__in=ids)
-            print(is_favorited, ids, queryset)
-        print(is_favorited)
-        return queryset
-
     def create(self, request, *args, **kwargs):
         """Метод создания рецепта."""
         serializer = RecipeCreateSerializer(
             data=request.data, context={"request": request}
         )
 
-        if serializer.is_valid():
-            recipe = serializer.save(author=request.user)
-            response_serializer = RecipeFullSerializer(recipe)
-            return Response(
-                response_serializer.data, status=status.HTTP_201_CREATED
-            )
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
+        recipe = serializer.save(author=request.user)
+        response_serializer = RecipeFullSerializer(recipe)
+        return Response(
+            response_serializer.data, status=status.HTTP_201_CREATED
+        )
 
     @action(
         detail=True, methods=["post"], permission_classes=[IsAuthenticated]
@@ -354,9 +310,9 @@ class RecipeView(viewsets.ModelViewSet):
             )
 
         ingredients = (
-            RecipeIngredient.objects.filter(recipe__shoppingcart__user=user)
+            RecipeIngredient.objects.filter(recipe__in_carts__user=user)
             .values("ingredient__name", "ingredient__measurement_unit")
-            .annotate(total_quantity=Sum("quantity"))
+            .annotate(total_quantity=Sum("amount"))
         )
 
         txt_buffer = StringIO()

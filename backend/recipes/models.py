@@ -1,4 +1,6 @@
 """Модуль, содержащий модели Django-приложения recipes."""
+from colorfield.fields import ColorField
+
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
@@ -11,7 +13,10 @@ class Tag(models.Model):
     """Модель для хранения информации о тегах."""
 
     name = models.CharField(max_length=200, unique=True)
-    color = models.CharField(max_length=7)
+    color = ColorField(
+        default="#FF0000",
+        verbose_name="Цвет",
+    )
     slug = models.SlugField(
         max_length=200,
         unique=True,
@@ -47,7 +52,6 @@ class Recipe(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to="recipes/")
-    description = models.TextField()
     text = models.TextField()
     ingredients = models.ManyToManyField(
         Ingredient, through="RecipeIngredient"
@@ -67,11 +71,11 @@ class RecipeIngredient(models.Model):
         Recipe, on_delete=models.CASCADE, related_name="amount"
     )
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
+    amount = models.PositiveIntegerField()
 
     def __str__(self):
         """Возвращает строковое представление объекта."""
-        return f"{self.recipe} - {self.ingredient}"
+        return f"{self.ingredient} – {self.amount}"
 
 
 class FavoriteRecipe(models.Model):

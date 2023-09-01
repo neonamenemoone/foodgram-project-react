@@ -10,7 +10,7 @@ class RecipeIngredientInline(admin.TabularInline):
 
     model = RecipeIngredient
     extra = 1
-    fields = ["ingredient", "quantity"]
+    fields = ["ingredient", "amount"]
 
 
 class RecipeAdmin(admin.ModelAdmin):

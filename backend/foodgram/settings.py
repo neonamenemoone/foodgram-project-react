@@ -1,7 +1,6 @@
 """Django settings for foodgram project."""
 
 import os
-from datetime import timedelta
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "colorfield",
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
@@ -69,11 +69,6 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
     ),
-}
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=99),
-    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 WSGI_APPLICATION = "foodgram.wsgi.application"
