@@ -15,26 +15,16 @@ from django.db.models import Sum
 from django.http import HttpResponse
 
 from recipes.models import (
-    FavoriteRecipe,
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    ShoppingCart,
-    Tag,
+    FavoriteRecipe, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag,
 )
 from users.models import Subscription, User
 
 from .filters import FavoriteAndShoppingCartFilter
 from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (
-    ChangePasswordSerializer,
-    IngredientSerializer,
-    RecipeCreateSerializer,
-    RecipeFullSerializer,
-    RecipeSerializer,
-    SubscriptionSerializer,
-    TagSerializer,
-    UserSerializer,
+    ChangePasswordSerializer, IngredientSerializer, RecipeCreateSerializer,
+    RecipeFullSerializer, RecipeSerializer, SubscriptionSerializer,
+    TagSerializer, UserSerializer,
 )
 
 
