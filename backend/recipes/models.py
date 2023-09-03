@@ -14,18 +14,17 @@ class Tag(models.Model):
 
     name = models.CharField(max_length=200, unique=True)
     color = ColorField(
-        default="#FF0000",
-        verbose_name="Цвет",
+        default='#FF0000',
+        verbose_name='Цвет',
     )
     slug = models.SlugField(
         max_length=200,
         unique=True,
-        null=True,
         validators=[
             RegexValidator(
-                regex=r"^[-a-zA-Z0-9_]+$",
-                message="Slug не может содержать такие символы.",
-                code="invalid_slug",
+                regex=r'^[-a-zA-Z0-9_]+$',
+                message='Slug не может содержать такие символы.',
+                code='invalid_slug',
             )
         ],
     )
@@ -51,10 +50,10 @@ class Recipe(models.Model):
 
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    image = models.ImageField(upload_to="recipes/")
+    image = models.ImageField(upload_to='recipes/')
     text = models.TextField()
     ingredients = models.ManyToManyField(
-        Ingredient, through="RecipeIngredient"
+        Ingredient, through='RecipeIngredient'
     )
     tags = models.ManyToManyField(Tag)
     cooking_time = models.PositiveIntegerField()
@@ -68,43 +67,55 @@ class RecipeIngredient(models.Model):
     """Модель для хранения информации о ингредиентах в рецептах."""
 
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="amount"
+        Recipe, on_delete=models.CASCADE, related_name='amount'
     )
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
 
     def __str__(self):
         """Возвращает строковое представление объекта."""
-        return f"{self.ingredient} – {self.amount}"
+        return f'{self.ingredient} – {self.amount}'
 
 
 class FavoriteRecipe(models.Model):
     """Модель для хранения информации о рецептах, добавленных в избранное."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="favorite"
+        User, on_delete=models.CASCADE, related_name='favorite'
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="in_favorites"
+        Recipe, on_delete=models.CASCADE, related_name='in_favorites'
     )
 
     class Meta:
         """Метакласс модели информации о рецептах."""
 
-        unique_together = ["user", "recipe"]
+        unique_together = [
+            'user',
+            'recipe'
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} - {self.recipe.name}'
 
 
 class ShoppingCart(models.Model):
     """Модель для рецептов, добавленных в список покупок."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="shopping_cart"
+        User, on_delete=models.CASCADE, related_name='shopping_cart'
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="in_carts"
+        Recipe, on_delete=models.CASCADE, related_name='in_carts'
     )
 
     class Meta:
         """Метакласс модели списка покупок."""
 
-        unique_together = ["user", "recipe"]
+        unique_together = [
+            'user',
+            'recipe'
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} - {self.recipe.name}'
