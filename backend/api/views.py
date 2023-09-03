@@ -143,12 +143,10 @@ class RecipeView(viewsets.ModelViewSet):
 
         queryset = queryset.select_related('author')
 
-        queryset = queryset.prefetch_related(
+        return queryset.prefetch_related(
             Prefetch('tags', queryset=Tag.objects.all()),
             Prefetch('ingredients', queryset=Ingredient.objects.all()),
         )
-
-        return queryset
 
     def get_serializer(self, *args, **kwargs):
         """Получение сериализатора с контекстом запроса"""
