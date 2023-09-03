@@ -10,8 +10,8 @@ from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import Prefetch
-from django.db.models import Sum
+
+from django.db.models import Prefetch, Sum
 from django.http import HttpResponse
 
 from recipes.models import (
