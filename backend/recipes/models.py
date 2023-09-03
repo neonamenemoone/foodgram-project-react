@@ -2,7 +2,7 @@
 from colorfield.fields import ColorField
 
 from django.contrib.auth import get_user_model
-from django.core.validators import RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 
@@ -14,20 +14,26 @@ class Tag(models.Model):
 
     name = models.CharField(max_length=200, unique=True)
     color = ColorField(
-        default='#FF0000',
-        verbose_name='Цвет',
+        default="#FF0000",
+        verbose_name="Цвет",
     )
     slug = models.SlugField(
         max_length=200,
         unique=True,
         validators=[
             RegexValidator(
-                regex=r'^[-a-zA-Z0-9_]+$',
-                message='Slug не может содержать такие символы.',
-                code='invalid_slug',
+                regex=r"^[-a-zA-Z0-9_]+$",
+                message="Slug не может содержать такие символы.",
+                code="invalid_slug",
             )
         ],
     )
+
+    class Meta:
+        """Метакласс модели тэг."""
+
+        verbose_name = "Тэг"
+        verbose_name_plural = "Тэги"
 
     def __str__(self):
         """Возвращает строковое представление объекта тега."""
@@ -37,8 +43,14 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     """Модель для хранения информации об ингредиентах рецептов."""
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=200)
     measurement_unit = models.CharField(max_length=50)
+
+    class Meta:
+        """Метакласс модели ингредиент."""
+
+        verbose_name = "Ингридиент"
+        verbose_name_plural = "Ингридиенты"
 
     def __str__(self):
         """Возвращает строковое представление объекта ингредиента."""
@@ -48,15 +60,23 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     """Модель для хранения информации о рецептах."""
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    image = models.ImageField(upload_to='recipes/')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="recipes"
+    )
+    name = models.CharField(max_length=200)
+    image = models.ImageField(upload_to="recipes/")
     text = models.TextField()
     ingredients = models.ManyToManyField(
-        Ingredient, through='RecipeIngredient'
+        Ingredient, through="RecipeIngredient", related_name="in_recipes"
     )
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, related_name="recipes")
     cooking_time = models.PositiveIntegerField()
+
+    class Meta:
+        """Метакласс модели рецепт."""
+
+        verbose_name = "Рецепт"
+        verbose_name_plural = "Рецепты"
 
     def __str__(self):
         """Возвращает строковое представление объекта."""
@@ -67,55 +87,65 @@ class RecipeIngredient(models.Model):
     """Модель для хранения информации о ингредиентах в рецептах."""
 
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='amount'
+        Recipe, on_delete=models.CASCADE, related_name="amount"
     )
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    amount = models.PositiveIntegerField()
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE, related_name="amout"
+    )
+    amount = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(0)]
+    )
+
+    class Meta:
+        """Метакласс модели о ингредиентах в рецепте."""
+
+        verbose_name = "Количество ингредиента"
+        verbose_name_plural = "Количество ингредиента"
 
     def __str__(self):
         """Возвращает строковое представление объекта."""
-        return f'{self.ingredient} – {self.amount}'
+        return f"{self.ingredient} – {self.amount}"
 
 
 class FavoriteRecipe(models.Model):
     """Модель для хранения информации о рецептах, добавленных в избранное."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='favorite'
+        User, on_delete=models.CASCADE, related_name="favorite"
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='in_favorites'
+        Recipe, on_delete=models.CASCADE, related_name="in_favorites"
     )
 
     class Meta:
         """Метакласс модели информации о рецептах."""
 
-        unique_together = [
-            'user',
-            'recipe'
-        ]
+        verbose_name = "Избранные рецепты"
+        verbose_name_plural = "Избранные рецепты"
+        unique_together = ["user", "recipe"]
 
     def __str__(self):
-        return f'{self.user.username} - {self.recipe.name}'
+        """Возвращает строковое представление объекта."""
+        return f"{self.user.username} - {self.recipe.name}"
 
 
 class ShoppingCart(models.Model):
     """Модель для рецептов, добавленных в список покупок."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='shopping_cart'
+        User, on_delete=models.CASCADE, related_name="shopping_cart"
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='in_carts'
+        Recipe, on_delete=models.CASCADE, related_name="in_carts"
     )
 
     class Meta:
         """Метакласс модели списка покупок."""
 
-        unique_together = [
-            'user',
-            'recipe'
-        ]
+        verbose_name = "Список покупок"
+        verbose_name_plural = "Список покупок"
+        unique_together = ["user", "recipe"]
 
     def __str__(self):
-        return f'{self.user.username} - {self.recipe.name}'
+        """Возвращает строковое представление объекта."""
+        return f"{self.user.username} - {self.recipe.name}"
