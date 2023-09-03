@@ -18,7 +18,7 @@ class User(AbstractUser):
     is_subscribed = models.BooleanField("Подписан", default=False)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
     class Meta:
         """Метакласс модели пользователя."""
