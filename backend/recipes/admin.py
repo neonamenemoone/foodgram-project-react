@@ -8,14 +8,16 @@ from django.http.request import HttpRequest
 
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 
+
 class RecipeIngredientInline(admin.TabularInline):
+    """Первый кастомный админский класс для модели Рецепт-ингридиент."""
     model = RecipeIngredient
     extra = 1
 
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    """Кастомный админский класс для модели Рецепт-ингридиент."""
+    """Второй кастомный админский класс для модели Рецепт-ингридиент."""
 
 
 @admin.register(Recipe)
