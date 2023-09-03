@@ -8,6 +8,10 @@ from django.http.request import HttpRequest
 
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
@@ -21,6 +25,8 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = ("name", "author")
     list_filter = ("author", "name", "tags")
     search_fields = ("name", "author__email", "author__username")
+
+    inlines = [RecipeIngredientInline]
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         """Получает кастомный QuerySet для списка рецептов в админке."""
