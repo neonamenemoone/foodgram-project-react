@@ -11,6 +11,7 @@ from .models import Ingredient, Recipe, RecipeIngredient, Tag
 
 class RecipeIngredientInline(admin.TabularInline):
     """Первый кастомный админский класс для модели Рецепт-ингридиент."""
+
     model = RecipeIngredient
     extra = 1
 
