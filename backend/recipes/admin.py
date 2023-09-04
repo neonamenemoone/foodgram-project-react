@@ -6,7 +6,9 @@ from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 
-from .models import Ingredient, Recipe, RecipeIngredient, Tag
+from .models import (
+    FavoriteRecipe, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag,
+)
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -61,3 +63,29 @@ class IngredientAdmin(admin.ModelAdmin):
 
     list_display = ("name", "measurement_unit")
     list_filter = ("name",)
+
+
+@admin.register(FavoriteRecipe)
+class FavoriteRecipeAdmin(admin.ModelAdmin):
+    """Кастомный админский класс для модели Избранных рецептов."""
+
+    list_display = ("user", "recipe")
+    list_filter = ("user", "recipe")
+    search_fields = ("user__username", "recipe__name")
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        """Получает кастомный QuerySet для списка избранных рецептов."""
+        return FavoriteRecipe.objects.select_related("user", "recipe").all()
+
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    """Кастомный админский класс для модели Списка покупок."""
+
+    list_display = ("user", "recipe")
+    list_filter = ("user", "recipe")
+    search_fields = ("user__username", "recipe__name")
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        """Получает кастомный QuerySet для списка покупок."""
+        return ShoppingCart.objects.select_related("user", "recipe").all()

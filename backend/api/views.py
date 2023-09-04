@@ -224,12 +224,6 @@ class RecipeView(viewsets.ModelViewSet):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, *args, **kwargs):
-        """Метод для удаления рецепта."""
-        instance = self.get_object()
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
     @action(
         detail=True,
         methods=["post"],
@@ -301,5 +295,5 @@ class RecipeView(viewsets.ModelViewSet):
         response = HttpResponse(txt_buffer, content_type="text/plain")
         response[
             "Content-Disposition"
-        ] = 'attachment; filename="shopping_list.txt"'
+        ] = "attachment; filename='shopping_list.txt'"
         return response
