@@ -12,7 +12,11 @@ User = get_user_model()
 class Tag(models.Model):
     """Модель для хранения информации о тегах."""
 
-    name = models.CharField(max_length=200, unique=True)
+    name = models.CharField(
+        max_length=200,
+        unique=True,
+        verbose_name="Название"
+    )
     color = ColorField(
         default="#FF0000",
         verbose_name="Цвет",
@@ -27,6 +31,7 @@ class Tag(models.Model):
                 code="invalid_slug",
             )
         ],
+        verbose_name="Slug"
     )
 
     class Meta:
@@ -43,8 +48,14 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     """Модель для хранения информации об ингредиентах рецептов."""
 
-    name = models.CharField(max_length=200)
-    measurement_unit = models.CharField(max_length=50)
+    name = models.CharField(
+        max_length=200,
+        verbose_name="Название"
+    )
+    measurement_unit = models.CharField(
+        max_length=200,
+        verbose_name="Единица измерения"
+    )
 
     class Meta:
         """Метакласс модели ингредиент."""
@@ -61,16 +72,37 @@ class Recipe(models.Model):
     """Модель для хранения информации о рецептах."""
 
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="recipes"
+        User,
+        on_delete=models.CASCADE,
+        related_name="recipes",
+        verbose_name="Автор"
     )
-    name = models.CharField(max_length=200)
-    image = models.ImageField(upload_to="recipes/")
-    text = models.TextField()
+    name = models.CharField(
+        max_length=200,
+        verbose_name="Название"
+    )
+    image = models.ImageField(
+        upload_to="recipes/",
+        verbose_name="Изображение"
+    )
+    text = models.TextField(
+        verbose_name="Описание"
+    )
     ingredients = models.ManyToManyField(
-        Ingredient, through="RecipeIngredient", related_name="in_recipes"
+        Ingredient,
+        through="RecipeIngredient",
+        related_name="in_recipes",
+        verbose_name="Ингредиенты"
     )
-    tags = models.ManyToManyField(Tag, related_name="recipes")
-    cooking_time = models.PositiveIntegerField()
+    tags = models.ManyToManyField(
+        Tag,
+        related_name="recipes",
+        verbose_name="Теги"
+    )
+    cooking_time = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        verbose_name="Время приготовления (в минутах)"
+    )
 
     class Meta:
         """Метакласс модели рецепт."""
@@ -87,13 +119,20 @@ class RecipeIngredient(models.Model):
     """Модель для хранения информации о ингредиентах в рецептах."""
 
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="amount"
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="amount",
+        verbose_name="Рецепт"
     )
     ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE, related_name="amout"
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name="amout",
+        verbose_name="Ингредиент"
     )
     amount = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0)]
+        validators=[MinValueValidator(1)],
+        verbose_name="Количество"
     )
 
     class Meta:
@@ -111,10 +150,16 @@ class FavoriteRecipe(models.Model):
     """Модель для хранения информации о рецептах, добавленных в избранное."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="favorite"
+        User,
+        on_delete=models.CASCADE,
+        related_name="favorite",
+        verbose_name="Пользователь"
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="in_favorites"
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="in_favorites",
+        verbose_name="Рецепт"
     )
 
     class Meta:
@@ -133,10 +178,16 @@ class ShoppingCart(models.Model):
     """Модель для рецептов, добавленных в список покупок."""
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="shopping_cart"
+        User,
+        on_delete=models.CASCADE,
+        related_name="shopping_cart",
+        verbose_name="Пользователь"
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="in_carts"
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="in_carts",
+        verbose_name="Рецепт"
     )
 
     class Meta:
