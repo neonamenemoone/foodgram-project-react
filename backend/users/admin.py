@@ -53,7 +53,5 @@ class SubscriptionAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Получает кастомный QuerySet для списка подписок в админке."""
         return (
-            Subscription.objects.prefetch_related("follower")
-            .prefetch_related("author")
-            .all()
+            super().get_queryset(request).select_related("follower", "author")
         )

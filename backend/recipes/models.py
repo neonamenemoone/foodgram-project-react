@@ -13,9 +13,7 @@ class Tag(models.Model):
     """Модель для хранения информации о тегах."""
 
     name = models.CharField(
-        max_length=200,
-        unique=True,
-        verbose_name="Название"
+        max_length=200, unique=True, verbose_name="Название"
     )
     color = ColorField(
         default="#FF0000",
@@ -31,7 +29,7 @@ class Tag(models.Model):
                 code="invalid_slug",
             )
         ],
-        verbose_name="Slug"
+        verbose_name="Slug",
     )
 
     class Meta:
@@ -48,13 +46,9 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     """Модель для хранения информации об ингредиентах рецептов."""
 
-    name = models.CharField(
-        max_length=200,
-        verbose_name="Название"
-    )
+    name = models.CharField(max_length=200, verbose_name="Название")
     measurement_unit = models.CharField(
-        max_length=200,
-        verbose_name="Единица измерения"
+        max_length=200, verbose_name="Единица измерения"
     )
 
     class Meta:
@@ -75,33 +69,23 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="recipes",
-        verbose_name="Автор"
+        verbose_name="Автор",
     )
-    name = models.CharField(
-        max_length=200,
-        verbose_name="Название"
-    )
-    image = models.ImageField(
-        upload_to="recipes/",
-        verbose_name="Изображение"
-    )
-    text = models.TextField(
-        verbose_name="Описание"
-    )
+    name = models.CharField(max_length=200, verbose_name="Название")
+    image = models.ImageField(upload_to="recipes/", verbose_name="Изображение")
+    text = models.TextField(verbose_name="Описание")
     ingredients = models.ManyToManyField(
         Ingredient,
         through="RecipeIngredient",
         related_name="in_recipes",
-        verbose_name="Ингредиенты"
+        verbose_name="Ингредиенты",
     )
     tags = models.ManyToManyField(
-        Tag,
-        related_name="recipes",
-        verbose_name="Теги"
+        Tag, related_name="recipes", verbose_name="Теги"
     )
     cooking_time = models.PositiveIntegerField(
         validators=[MinValueValidator(1)],
-        verbose_name="Время приготовления (в минутах)"
+        verbose_name="Время приготовления (в минутах)",
     )
 
     class Meta:
@@ -122,17 +106,16 @@ class RecipeIngredient(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         related_name="amount",
-        verbose_name="Рецепт"
+        verbose_name="Рецепт",
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         related_name="amout",
-        verbose_name="Ингредиент"
+        verbose_name="Ингредиент",
     )
     amount = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1)],
-        verbose_name="Количество"
+        validators=[MinValueValidator(1)], verbose_name="Количество"
     )
 
     class Meta:
@@ -153,13 +136,13 @@ class FavoriteRecipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="favorite",
-        verbose_name="Пользователь"
+        verbose_name="Пользователь",
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name="in_favorites",
-        verbose_name="Рецепт"
+        verbose_name="Рецепт",
     )
 
     class Meta:
@@ -181,13 +164,13 @@ class ShoppingCart(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="shopping_cart",
-        verbose_name="Пользователь"
+        verbose_name="Пользователь",
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name="in_carts",
-        verbose_name="Рецепт"
+        verbose_name="Рецепт",
     )
 
     class Meta:

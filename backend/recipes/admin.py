@@ -36,10 +36,9 @@ class RecipeAdmin(admin.ModelAdmin):
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         """Получает кастомный QuerySet для списка рецептов в админке."""
         return (
-            Recipe.objects.prefetch_related("tags")
-            .prefetch_related("ingredients")
-            .select_related("author")
-            .all()
+            super()
+            .get_queryset(request)
+            .prefetch_related("tags", "ingredients", "author")
         )
 
     def get_favorite_count(self, obj):
@@ -75,7 +74,7 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         """Получает кастомный QuerySet для списка избранных рецептов."""
-        return FavoriteRecipe.objects.select_related("user", "recipe").all()
+        return super().get_queryset(request).select_related("user", "recipe")
 
 
 @admin.register(ShoppingCart)
@@ -88,4 +87,4 @@ class ShoppingCartAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         """Получает кастомный QuerySet для списка покупок."""
-        return ShoppingCart.objects.select_related("user", "recipe").all()
+        return super().get_queryset(request).select_related("user", "recipe")

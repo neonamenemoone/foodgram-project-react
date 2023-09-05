@@ -22,11 +22,12 @@ class UserSerializer(serializers.ModelSerializer):
 
         model = User
         fields = (
+            "id",
             "email",
             "username",
             "first_name",
             "last_name",
-            "password"
+            "password",
         )
 
     def validate_password(self, password):
@@ -70,12 +71,7 @@ class TagSerializer(serializers.ModelSerializer):
         """Метакласс тегов."""
 
         model = Tag
-        fields = (
-            "id",
-            "name",
-            "color",
-            "slug"
-        )
+        fields = ("id", "name", "color", "slug")
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -85,11 +81,7 @@ class IngredientSerializer(serializers.ModelSerializer):
         """Метакласс ингредиентов."""
 
         model = Ingredient
-        fields = (
-            "id",
-            "name",
-            "measurement_unit"
-        )
+        fields = ("id", "name", "measurement_unit")
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -102,10 +94,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         """Метакласс для ингридиентов в рецепте."""
 
         model = RecipeIngredient
-        fields = (
-            "id",
-            "amount"
-        )
+        fields = ("id", "amount")
 
     def validate_amount(self, amount):
         """Проверка количества."""
@@ -133,17 +122,13 @@ class IngrediendAmountSerializer(serializers.ModelSerializer):
         """Метакласс количества ингредиентов."""
 
         model = RecipeIngredient
-        fields = (
-            "id",
-            "name",
-            "measurement_unit",
-            "amount"
-        )
+        fields = ("id", "name", "measurement_unit", "amount")
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для подписок."""
 
+    recipes_count = serializers.IntegerField()
     email = serializers.EmailField(source="author.email")
     id = serializers.IntegerField(source="author.id")
     username = serializers.CharField(source="author.username")
@@ -151,7 +136,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(source="author.last_name")
     is_subscribed = serializers.BooleanField(default=True)
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         """Метакласс подписок."""
@@ -173,10 +157,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         recipes = Recipe.objects.filter(author=obj.author)
         serializers = RecipeSerializer(recipes, many=True)
         return serializers.data
-
-    def get_recipes_count(self, obj) -> int:
-        """Метод для получения queryset с аннотацией количества рецептов."""
-        return obj.author.recipes.count()
 
 
 class UserWithSubscriptionsSerializer(serializers.ModelSerializer):
@@ -205,12 +185,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         """Метакласс рецепта."""
 
         model = Recipe
-        fields = (
-            "id",
-            "name",
-            "image",
-            "cooking_time"
-        )
+        fields = ("id", "name", "image", "cooking_time")
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):

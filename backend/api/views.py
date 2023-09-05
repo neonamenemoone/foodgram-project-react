@@ -11,8 +11,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 
 from recipes.models import (
     FavoriteRecipe, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag,
@@ -65,7 +66,9 @@ class UserView(viewsets.ModelViewSet):
     )
     def subscriptions(self, request):
         """Метод для получения списка подписок пользователя."""
-        self.queryset = Subscription.objects.filter(follower=request.user)
+        self.queryset = Subscription.objects.filter(
+            follower=request.user
+        ).annotate(recipes_count=Count("author__recipes"))
         self.serializer_class = SubscriptionSerializer
         return super().list(request)
 
@@ -76,7 +79,7 @@ class UserView(viewsets.ModelViewSet):
     )
     def subscribe(self, request, pk=None):
         """Метод для подписки пользователей."""
-        target_user = User.objects.filter(id=pk)
+        target_user = get_object_or_404(User, id=pk)
 
         if target_user == request.user:
             return Response(
@@ -99,14 +102,9 @@ class UserView(viewsets.ModelViewSet):
     @subscribe.mapping.delete
     def unsubscribe(self, request, pk=None):
         """Метод для отписки пользователей."""
-        deleted_count, _ = Subscription.objects.filter(
-            follower=request.user, author_id=pk
+        get_object_or_404(
+            Subscription, follower=request.user, author_id=pk
         ).delete()
-        if deleted_count == 0:
-            return Response(
-                {"error": "Вы не были подписаны на этого пользователя."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -132,12 +130,7 @@ class RecipeView(viewsets.ModelViewSet):
     """Представление для рецептов."""
 
     pagination_class = PageNumberPagination
-    queryset = (
-        Recipe.objects.prefetch_related("tags")
-        .prefetch_related("ingredients")
-        .select_related("author")
-        .all()
-    )
+    queryset = Recipe.objects.prefetch_related("tags", "ingredients", "author")
     serializer_class = RecipeFullSerializer
     permission_classes = [IsAuthorOrAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
@@ -189,20 +182,12 @@ class RecipeView(viewsets.ModelViewSet):
     @favorite.mapping.delete
     def favorite_delete(self, request, pk):
         """Метод для удаления рецепта в избранное."""
-        recipe = self.get_object()
         user = request.user
+        recipe = self.get_object()
 
-        try:
-            favorite_recipe = FavoriteRecipe.objects.get(
-                user=user, recipe=recipe
-            )
-            favorite_recipe.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except FavoriteRecipe.DoesNotExist:
-            return Response(
-                {"errors": "Рецепт не найден в избранном."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        get_object_or_404(FavoriteRecipe, user=user, recipe=recipe).delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def partial_update(self, request, *args, **kwargs):
         """Метод для изменения рецепта."""

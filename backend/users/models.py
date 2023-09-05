@@ -17,25 +17,18 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
-        validators=[RegexValidator(
-            r"^[\w.@+-]+$",
-            "Используйте только буквы, цифры и символы @/./+/-/_",
-            "invalid_username"
-        )],
+        validators=[
+            RegexValidator(
+                r"^[\w.@+-]+$",
+                "Используйте только буквы, цифры и символы @/./+/-/_",
+                "invalid_username",
+            )
+        ],
         verbose_name="Username",
     )
-    first_name = models.CharField(
-        max_length=150,
-        verbose_name="Имя"
-    )
-    last_name = models.CharField(
-        max_length=150,
-        verbose_name="Фамилия"
-    )
-    is_subscribed = models.BooleanField(
-        default=False,
-        verbose_name="Подписан"
-    )
+    first_name = models.CharField(max_length=150, verbose_name="Имя")
+    last_name = models.CharField(max_length=150, verbose_name="Фамилия")
+    is_subscribed = models.BooleanField(default=False, verbose_name="Подписан")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
@@ -58,13 +51,13 @@ class Subscription(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="following",
-        verbose_name="Подписчик"
+        verbose_name="Подписчик",
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="followers",
-        verbose_name="Автор"
+        verbose_name="Автор",
     )
 
     class Meta:
