@@ -34,3 +34,8 @@
 Зафиксируйте свои изменения: `git commit -m "Добавление новой функции"`.<br>
 Отправьте изменения в свой форк: `git push origin имя-функции`.<br>
 Создайте запрос на включение изменений в основной репозиторий.<br>
+
+domain: foooooood.ddns.net
+ip: 158.160.71.189
+emal: admin@admin.admin
+passwword: admin
