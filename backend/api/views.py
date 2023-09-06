@@ -102,9 +102,14 @@ class UserView(viewsets.ModelViewSet):
     @subscribe.mapping.delete
     def unsubscribe(self, request, pk=None):
         """Метод для отписки пользователей."""
-        get_object_or_404(
-            Subscription, follower=request.user, author_id=pk
+        amount, _ = Subscription.objects.filter(
+            follower=request.user, author_id=pk
         ).delete()
+        if not amount:
+            return Response(
+                {"errors": "Рецепт не найден в избранном."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -130,7 +135,9 @@ class RecipeView(viewsets.ModelViewSet):
     """Представление для рецептов."""
 
     pagination_class = PageNumberPagination
-    queryset = Recipe.objects.prefetch_related("tags", "ingredients", "author")
+    queryset = Recipe.objects.prefetch_related(
+        "tags", "ingredients"
+    ).select_related("author")
     serializer_class = RecipeFullSerializer
     permission_classes = [IsAuthorOrAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
@@ -185,7 +192,14 @@ class RecipeView(viewsets.ModelViewSet):
         user = request.user
         recipe = self.get_object()
 
-        get_object_or_404(FavoriteRecipe, user=user, recipe=recipe).delete()
+        amount, _ = FavoriteRecipe.objects.filter(
+            user=user, recipe=recipe
+        ).delete()
+        if not amount:
+            return Response(
+                {"errors": "Рецепт не найден в избранном."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
