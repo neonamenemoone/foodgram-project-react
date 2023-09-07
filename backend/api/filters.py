@@ -3,10 +3,28 @@ from django_filters import rest_framework as django_filters
 
 from django.contrib.auth import get_user_model
 
-from recipes.models import Recipe, Tag
+from recipes.models import Ingredient, Recipe, Tag
 
 
 User = get_user_model()
+
+
+class SubscriptionsFilter(django_filters.FilterSet):
+    """Фильтрация избранного и списка покупок."""
+
+    recipes_limit = django_filters.NumberFilter(method="get_queryset")
+
+    class Meta:
+        """Метакласс фильтра."""
+
+        model = Recipe
+        fields = ["recipes_limit"]
+
+    def get_queryset(self, queryset, name, value):
+        """Определяет, какие объекты следует фильтровать."""
+        if name == "recipes_limit":
+            return queryset[:3]
+        return queryset
 
 
 class FavoriteAndShoppingCartFilter(django_filters.FilterSet):
@@ -34,3 +52,15 @@ class FavoriteAndShoppingCartFilter(django_filters.FilterSet):
         if name == "is_favorited":
             return queryset.filter(in_favorites__user=self.request.user)
         return queryset
+
+
+class IngredientFilter(django_filters.FilterSet):
+    """Фильтрация ингредиентов."""
+
+    name = django_filters.CharFilter(lookup_expr="icontains")
+
+    class Meta:
+        """Метакласс фильтра."""
+
+        model = Ingredient
+        fields = ("name",)

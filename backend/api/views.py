@@ -6,7 +6,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -20,7 +19,7 @@ from recipes.models import (
 )
 from users.models import Subscription, User
 
-from .filters import FavoriteAndShoppingCartFilter
+from .filters import FavoriteAndShoppingCartFilter, IngredientFilter
 from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (
     ChangePasswordSerializer, IngredientSerializer, RecipeCreateSerializer,
@@ -37,12 +36,20 @@ class UserView(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     pagination_class = PageNumberPagination
 
+    def get_serializer(self, *args, **kwargs):
+        """Метод для получения сериалайзера."""
+        kwargs["context"] = {"request": self.request}
+        return super().get_serializer(
+            *args,
+            **kwargs,
+        )
+
     @action(
         detail=False, methods=["get"], permission_classes=[IsAuthenticated]
     )
     def me(self, request):
         """Метод для информации о текущем пользователе."""
-        return Response(UserSerializer(request.user).data)
+        return Response(self.get_serializer().data)
 
     @action(
         detail=False, methods=["post"], permission_classes=[IsAuthenticated]
@@ -69,8 +76,14 @@ class UserView(viewsets.ModelViewSet):
         self.queryset = Subscription.objects.filter(
             follower=request.user
         ).annotate(recipes_count=Count("author__recipes"))
-        self.serializer_class = SubscriptionSerializer
-        return super().list(request)
+        queryset = self.paginate_queryset(self.queryset)
+        recipes_limit = int(request.query_params.get("recipes_limit", 6))
+        serializer = SubscriptionSerializer(
+            queryset,
+            many=True,
+            context={"request": request, "recipes_limit": recipes_limit},
+        )
+        return self.get_paginated_response(serializer.data)
 
     @action(
         detail=True,
@@ -127,8 +140,8 @@ class IngredientView(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = [SearchFilter]
-    search_fields = ["name"]
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class RecipeView(viewsets.ModelViewSet):
@@ -163,7 +176,9 @@ class RecipeView(viewsets.ModelViewSet):
 
         serializer.is_valid(raise_exception=True)
         recipe = serializer.save(author=request.user)
-        response_serializer = RecipeFullSerializer(recipe)
+        response_serializer = RecipeFullSerializer(
+            recipe, context={"request": request}
+        )
         return Response(
             response_serializer.data, status=status.HTTP_201_CREATED
         )
@@ -251,10 +266,10 @@ class RecipeView(viewsets.ModelViewSet):
         """Метод для удаления рецепта из списка покупок."""
         recipe = self.get_object()
         user = request.user
-        shopping_cart, _ = ShoppingCart.objects.filter(
+        amount, _ = ShoppingCart.objects.filter(
             user=user, recipe=recipe
         ).delete()
-        if not shopping_cart:
+        if not amount:
             return Response(
                 {"errors": "Рецепт не найден в списке покупок."},
                 status=status.HTTP_400_BAD_REQUEST,

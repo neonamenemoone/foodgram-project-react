@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         """Метакласс регистрации пользователя."""
@@ -28,7 +29,16 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "password",
+            "is_subscribed",
         )
+
+    def get_is_subscribed(self, obj):
+        """Метод для поля is_subscribed."""
+        user = self.context.get("request").user
+        if not user.is_authenticated:
+            return False
+        follow = user.following.filter(author=obj)
+        return follow.exists()
 
     def validate_password(self, password):
         """Проверяет валидность пароля."""
@@ -134,7 +144,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="author.username")
     first_name = serializers.CharField(source="author.first_name")
     last_name = serializers.CharField(source="author.last_name")
-    is_subscribed = serializers.BooleanField(default=True)
+    is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
 
     class Meta:
@@ -152,9 +162,18 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             "recipes_count",
         )
 
+    def get_is_subscribed(self, obj):
+        """Метод для поля is_subscribed."""
+        user = self.context.get("request").user
+        if not user.is_authenticated:
+            return False
+        follow = user.following.filter(author=obj.author)
+        return follow.exists()
+
     def get_recipes(self, obj) -> list[Recipe]:
         """Метод для получения списка рецептов пользователя."""
-        recipes = Recipe.objects.filter(author=obj.author)
+        recipes_limit = self.context.get("recipes_limit")
+        recipes = Recipe.objects.filter(author=obj.author)[:recipes_limit]
         serializers = RecipeSerializer(recipes, many=True)
         return serializers.data
 
