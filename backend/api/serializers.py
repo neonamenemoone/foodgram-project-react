@@ -91,7 +91,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField(write_only=True)
 
     class Meta:
-        """Метакласс для ингридиентов в рецепте."""
+        """Метакласс для ингредиентов в рецепте."""
 
         model = RecipeIngredient
         fields = ("id", "amount")

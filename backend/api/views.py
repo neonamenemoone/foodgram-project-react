@@ -251,20 +251,18 @@ class RecipeView(viewsets.ModelViewSet):
         """Метод для удаления рецепта из списка покупок."""
         recipe = self.get_object()
         user = request.user
-        try:
-            shopping_cart = ShoppingCart.objects.get(user=user, recipe=recipe)
-
-            shopping_cart.delete()
-            return Response(
-                {"message": "Рецепт успешно удален из списка покупок."},
-                status=status.HTTP_204_NO_CONTENT,
-            )
-
-        except ShoppingCart.DoesNotExist:
+        shopping_cart, _ = ShoppingCart.objects.filter(
+            user=user, recipe=recipe
+        ).delete()
+        if not shopping_cart:
             return Response(
                 {"errors": "Рецепт не найден в списке покупок."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        return Response(
+            {"message": "Рецепт успешно удален из списка покупок."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
     def generate_shopping_list(self):
         """Метод для создания текстового файла списка покупок."""

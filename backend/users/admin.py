@@ -21,7 +21,6 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("username", "email", "first_name", "last_name")
     ordering = ("-date_joined",)
     filter_horizontal = ()
-    list_filter = ()
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         ("Personal Info", {"fields": ("first_name", "last_name", "email")}),

@@ -54,8 +54,8 @@ class Ingredient(models.Model):
     class Meta:
         """Метакласс модели ингредиент."""
 
-        verbose_name = "Ингридиент"
-        verbose_name_plural = "Ингридиенты"
+        verbose_name = "Ингредиент"
+        verbose_name_plural = "Ингредиенты"
 
     def __str__(self):
         """Возвращает строковое представление объекта ингредиента."""

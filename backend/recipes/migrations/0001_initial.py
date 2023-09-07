@@ -33,8 +33,8 @@ class Migration(migrations.Migration):
                 ('measurement_unit', models.CharField(max_length=50)),
             ],
             options={
-                'verbose_name': 'Ингридиент',
-                'verbose_name_plural': 'Ингридиенты',
+                'verbose_name': 'Ингредиент',
+                'verbose_name_plural': 'Ингредиенты',
             },
         ),
         migrations.CreateModel(

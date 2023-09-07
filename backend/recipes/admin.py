@@ -12,7 +12,7 @@ from .models import (
 
 
 class RecipeIngredientInline(admin.TabularInline):
-    """Первый кастомный админский класс для модели Рецепт-ингридиент."""
+    """Первый кастомный админский класс для модели Рецепт-ингредиент."""
 
     model = RecipeIngredient
     extra = 1
@@ -20,7 +20,7 @@ class RecipeIngredientInline(admin.TabularInline):
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    """Второй кастомный админский класс для модели Рецепт-ингридиент."""
+    """Второй кастомный админский класс для модели Рецепт-ингредиент."""
 
 
 @admin.register(Recipe)
@@ -28,7 +28,6 @@ class RecipeAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Рецепт."""
 
     list_display = ("name", "author")
-    list_filter = ("author", "name", "tags")
     search_fields = ("name", "author__email", "author__username")
 
     inlines = [RecipeIngredientInline]
@@ -53,7 +52,7 @@ class TagAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Тег."""
 
     list_display = ("name", "color", "slug")
-    list_filter = ("name",)
+    search_fields = ("name", "slug")
 
 
 @admin.register(Ingredient)
@@ -61,7 +60,7 @@ class IngredientAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Ингредиент."""
 
     list_display = ("name", "measurement_unit")
-    list_filter = ("name",)
+    search_fields = ("name",)
 
 
 @admin.register(FavoriteRecipe)
@@ -69,7 +68,6 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Избранных рецептов."""
 
     list_display = ("user", "recipe")
-    list_filter = ("user", "recipe")
     search_fields = ("user__username", "recipe__name")
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
@@ -82,7 +80,6 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Списка покупок."""
 
     list_display = ("user", "recipe")
-    list_filter = ("user", "recipe")
     search_fields = ("user__username", "recipe__name")
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
