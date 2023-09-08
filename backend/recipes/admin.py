@@ -28,7 +28,7 @@ class RecipeAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Рецепт."""
 
     list_display = ("name", "author")
-    list_filter = ("author", "name", "tags") 
+    list_filter = ("author", "name", "tags")
     search_fields = ("name", "author__email", "author__username")
 
     inlines = [RecipeIngredientInline]
@@ -69,7 +69,7 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Избранных рецептов."""
 
     list_display = ("user", "recipe")
-    list_filter = ("user", "recipe") 
+    list_filter = ("user", "recipe")
     search_fields = ("user__username", "recipe__name")
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
