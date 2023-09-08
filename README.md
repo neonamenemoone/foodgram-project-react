@@ -35,6 +35,7 @@
 Отправьте изменения в свой форк: `git push origin имя-функции`.<br>
 Создайте запрос на включение изменений в основной репозиторий.<br>
 
+
 domain: foooooood.ddns.net<br>
 ip: 158.160.71.189<br>
 email: admin@admin.admin<br>
