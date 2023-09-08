@@ -49,7 +49,14 @@ class UserView(viewsets.ModelViewSet):
     )
     def me(self, request):
         """Метод для информации о текущем пользователе."""
-        return Response(self.get_serializer().data)
+        return Response(
+            UserSerializer(
+                request.user,
+                context={
+                    "request": request,
+                },
+            ).data
+        )
 
     @action(
         detail=False, methods=["post"], permission_classes=[IsAuthenticated]
@@ -231,7 +238,9 @@ class RecipeView(viewsets.ModelViewSet):
 
         if serializer.is_valid():
             serializer.save()
-            response_serializer = RecipeFullSerializer(instance)
+            response_serializer = RecipeFullSerializer(
+                instance, context={"request": request}
+            )
             return Response(
                 response_serializer.data, status=status.HTTP_200_OK
             )

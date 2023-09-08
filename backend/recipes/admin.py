@@ -28,7 +28,7 @@ class RecipeAdmin(admin.ModelAdmin):
     """Кастомный админский класс для модели Рецепт."""
 
     list_display = ("name", "author")
-    list_filter = ("author", "name", "tags")
+    list_filter = ("author", "tags")
     search_fields = ("name", "author__email", "author__username")
 
     inlines = [RecipeIngredientInline]
